@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Memory Garden🐶🎀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0; padding: 0;
+            /* ปรับพื้นหลังเป็นสีชมพูอ่อนตามบรีฟ */
+            background-color: #fff0f5;
+            font-family: 'Prompt', sans-serif;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            position: relative;
+        }
+
+        .butterfly {
+            position: absolute; width: 20px; height: 20px;
+            pointer-events: none; z-index: 1; font-size: 20px;
+            animation: flying 12s linear infinite;
+        }
+        @keyframes flying {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(400px, -500px) rotate(360deg); opacity: 0; }
+        }
+
+        #status-text { 
+            color: #5d4037; font-size: 1rem; margin-bottom: 20px; 
+            z-index: 10; text-align: center; width: 85%;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            font-weight: 600;
+        }
+
+        #plant-container {
+            width: 280px; height: 380px;
+            display: flex; justify-content: center; align-items: flex-end;
+            position: relative; z-index: 5; 
+        }
+
+        #main-plant-img {
+            max-width: 100%; max-height: 100%;
+            object-fit: contain;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #nong-img {
+            position: absolute; 
+            bottom: 55%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 80px; height: auto;
+            cursor: pointer; z-index: 15; opacity: 0;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #nong-img.show { 
+            opacity: 1;
+            transform: translate(60px, -60px) scale(1);
+            animation: floatingNong 2s ease-in-out infinite alternate;
+        }
+        @keyframes floatingNong {
+            from { transform: translate(60px, -60px) scale(1); }
+            to { transform: translate(65px, -75px) scale(1.05); }
+        }
+
+        .memory-seed {
+            position: absolute;
+            width: 50px; height: 50px; 
+            padding: 3px; background: white;
+            border: 1px solid #eee;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+            top: 50%; left: 50%;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 60; 
+            cursor: pointer; pointer-events: auto;
+            object-fit: cover;
+            border-radius: 4px;
+            animation: bounceSeed 3s ease-in-out infinite;
+        }
+
+        @keyframes bounceSeed {
+            0%, 100% { margin-top: 0; transform: translate(-50%, -50%) scale(1); }
+            50% { margin-top: -12px; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        #photo-viewer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            justify-content: center; align-items: center; z-index: 300;
+        }
+        .view-card {
+            width: 75%; max-width: 260px;
+            background: white; padding: 10px 10px 20px 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: popNormal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popNormal { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .view-card img { width: 100%; height: auto; display: block; margin-bottom: 12px; border-radius: 2px; }
+        .view-caption { text-align: center; color: #444; font-size: 0.85rem; font-weight: 600; }
+
+        #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 6; cursor: pointer; }
+        #watering-can-img { position: fixed; width: 80px; height: 80px; pointer-events: none; display: none; z-index: 100; transform: rotate(-20deg); }
+
+        #box-btn {
+            position: absolute; top: 50%; left: 50%; 
+            width: 85px; height: auto; 
+            z-index: 100; cursor: pointer; 
+            transform: translate(-50%, -50%) scale(0);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: bounceSeed 2.5s ease-in-out infinite;
+            display: none;
+        }
+
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; z-index: 400;
+        }
+        #note-img-display {
+            width: 95%; 
+            max-width: 450px; 
+            height: auto;
+            animation: popNormal 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="song.mp3" loop></audio>
+
+    <!-- ปรับคำพูดเริ่มต้นให้เข้ากับคอนเซปต์ -->
+    <h1 id="status-text">พี่รดน้ำให้ต้นไม้ต้นนี้หน่อยนะ🌱</h1>
+
+    <div id="plant-container">
+        <img id="main-plant-img" src="stage1.png">
+        <img id="nong-img" src="nong.png">
+    </div>
+
+    <div id="touch-area"></div>
+    <img id="watering-can-img" src="water-can.png">
+
+    <img id="box-btn" src="box.png" onclick="openNote()">
+
+    <div id="photo-viewer" onclick="this.style.display='none'">
+        <div class="view-card" onclick="event.stopPropagation()">
+            <img id="view-img" src="">
+            <div id="view-caption" class="view-caption"></div>
+        </div>
+    </div>
+
+    <div id="overlay" onclick="this.style.display='none'">
+        <img id="note-img-display" src="note.png">
+    </div>
+
+    <script>
+        // ปรับเปลี่ยนอิโมจิเป็น หมา, โบว์, ดอกไม้สีชมพู ตามบรีฟ
+        function createButterflies() {
+            const emojis = ['🐶', '🎀', '🌸'];
+            for(let i=0; i<12; i++) {
+                const b = document.createElement('div');
+                b.className = 'butterfly';
+                b.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                b.style.left = Math.random() * 90 + 'vw';
+                b.style.top = Math.random() * 90 + 'vh';
+                b.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(b);
+            }
+        }
+        createButterflies();
+
+        let count = 0;
+        let isComplete = false;
+        
+        // อัปเดตแคปชันรูปภาพ 1-10 พร้อมเติมข้อ 9-10 ให้ซึ้งกินใจเข้ากับธีมต้นไม้ขี้อ้อน
+        const captions = [
+            "1. เจ้าของต้นไม้", 
+            "2. ต้นไม้น้อยๆของเทอ", 
+            "3. เทอรดน้ำให้ต้นไม้ของเทอทุกวัน", 
+            "4. ตั้งแต่ต้นเล็กๆ", 
+            "5. แล้วค่อยๆโตขึ้นๆทุกวัน", 
+            "6. บางวันก็เป็นต้นไม้ขี้งอล", 
+            "7. บางวันก็เป็นต้นไม้เอาแต่ใจ", 
+            "8. แต่เทอก็ยังใจดี รดน้ำให้หมาใจเย็น", 
+            "9. จนต้นไม่ต้นนี้โตขึ้นเยอะมากเลยคับ", 
+            "10. บางวันก็เป็นต้นไม่ร่าเริ่งให้คนแก่ยิ้มได้"
+        ];
+
+        const statusText = document.getElementById('status-text');
+        const plantImg = document.getElementById('main-plant-img');
+        const waterCan = document.getElementById('watering-can-img');
+        const touchArea = document.getElementById('touch-area');
+        const nongImg = document.getElementById('nong-img');
+        const plantContainer = document.getElementById('plant-container');
+        const boxBtn = document.getElementById('box-btn');
+        const bgMusic = document.getElementById('bg-music');
+
+        touchArea.addEventListener('pointerdown', (e) => {
+            if (isComplete) return;
+            count++;
+            
+            // ปรับข้อความตอนรดน้ำให้เข้ากับธีม "ผมเป็นต้นไม้ พี่เป็นคนรดน้ำ"
+            if (count <= 20) {
+                statusText.innerText = `เย้! ได้น้ำจากพี่แล้วเริ่มโตเลย (${count}%)`;
+            } else if (count <= 40) {
+                statusText.innerText = `ขอบคุณที่ตั้งใจเลี้ยงดูผมอย่างดีนะคับ (${count}%)`;
+            } else if (count <= 60) {
+                statusText.innerText = `ต้นไม้ของพี่กำลังเติบโตด้วยความรักแล้วนะ (${count}%)`;
+            } else if (count <= 80) {
+                statusText.innerText = `อีกนิดเดียวต้นไม้ของพี่จะสมบูรณ์แบบแล้วคับ (${count}%)`;
+            } else {
+                statusText.innerText = `เย้! ต้นไม้ของพี่เติบโตเต็มที่แล้ว! (${count}%)`;
+            }
+            
+            if(count === 20) plantImg.src = 'stage2.png';
+            if(count === 40) plantImg.src = 'stage3.png';
+            if(count === 60) plantImg.src = 'stage4.png';
+            if(count === 80) plantImg.src = 'stage5.png';
+            
+            if(count >= 100) {
+                plantImg.src = 'stage6.png';
+                isComplete = true;
+                waterCan.remove();
+                touchArea.remove();
+                // พอรดน้ำเสร็จ จะแสดงตัวสัญลักษณ์เครื่องหมายคำถาม (?) ทันทีโดยไม่ต้องผ่านหน้าช่อดอกไม้
+                setTimeout(() => { 
+                    nongImg.classList.add('show'); 
+                    statusText.innerText = `มีอะไรซ่อนอยู่ในต้นไม้ที่พี่รดน้ำด้วยนะ... ลองกดดูสิ?`; 
+                }, 800);
+            } else {
+                waterCan.style.display = "block";
+                waterCan.style.left = (e.clientX - 40) + "px";
+                waterCan.style.top = (e.clientY - 40) + "px";
+                plantImg.style.transform = "scale(1.05)";
+                setTimeout(() => plantImg.style.transform = "scale(1)", 50);
+            }
+        });
+
+        touchArea.addEventListener('pointerup', () => { if(waterCan) waterCan.style.display = "none"; });
+
+        // เมื่อกดที่น้อง (?) รูปภาพและกล่องจดหมายจะระเบิดเด้งออกมาทันทีตามบรีฟ
+        nongImg.onclick = () => {
+            bgMusic.play().catch(e => console.log("Music play blocked"));
+            nongImg.style.transform = "translate(150px, -200px) scale(0)";
+            nongImg.style.opacity = "0";
+            setTimeout(() => {
+                explode();
+            }, 200);
+        };
+
+        function explode() {
+            statusText.style.opacity = "0";
+            plantContainer.onclick = null;
+
+            for (let i = 0; i < 10; i++) {
+                const img = document.createElement('img');
+                img.src = `photo${i+1}.jpg`;
+                img.className = 'memory-seed';
+                img.onerror = function() { this.src = 'https://via.placeholder.com/60'; };
+                img.onclick = (e) => { e.stopPropagation(); showPhoto(img.src, captions[i]); };
+                document.body.appendChild(img);
+                
+                const angle = Math.random() * Math.PI * 2; 
+                const dist = 140 + (Math.random() * 60); 
+                const x = Math.cos(angle) * dist;
+                const y = Math.sin(angle) * dist;
+                const rotate = (Math.random() - 0.5) * 40; 
+
+                setTimeout(() => {
+                    img.style.left = `calc(50% + ${x}px)`;
+                    img.style.top = `calc(50% + ${y}px)`;
+                    img.style.transform = `translate(-50%, -50%) rotate(${rotate}deg) scale(1)`;
+                    img.style.animationDelay = (Math.random() * 2) + "s";
+                }, i * 60);
+            }
+
+            const boxAngle = Math.random() * Math.PI * 2; 
+            const boxDist = 180 + (Math.random() * 40); 
+            const boxX = Math.cos(boxAngle) * boxDist;
+            const boxY = Math.sin(boxAngle) * boxDist;
+            const boxRotate = (Math.random() - 0.5) * 30;
+
+            boxBtn.style.display = "block";
+            setTimeout(() => {
+                boxBtn.style.left = `calc(50% + ${boxX}px)`;
+                boxBtn.style.top = `calc(50% + ${boxY}px)`;
+                boxBtn.style.transform = `translate(-50%, -50%) rotate(${boxRotate}deg) scale(1)`;
+            }, 100);
+        }
+
+        function showPhoto(src, text) {
+            document.getElementById('view-img').src = src;
+            document.getElementById('view-caption').innerText = text;
+            document.getElementById('photo-viewer').style.display = 'flex';
+        }
+
+        function openNote() {
+            document.getElementById('overlay').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
