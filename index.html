@@ -229,7 +229,7 @@
             } else if (count <= 80) {
                 statusText.innerText = `อีกนิดเดียวต้นไม้ของพี่จะสมบูรณ์แบบแล้วคับ (${count}%)`;
             } else {
-                statusText.innerText = `เย้! ต้นไม้ของพี่เติบโตเต็มที่แล้ว! (${count}%)`;
+                statusText.innerText = `อีกนิดนะคับ ต้นไม้ของพี่เติบโตเต็มที่แล้ว (${count}%)`;
             }
             
             if(count === 20) plantImg.src = 'stage2.png';
@@ -245,7 +245,7 @@
                 // พอรดน้ำเสร็จ จะแสดงตัวสัญลักษณ์เครื่องหมายคำถาม (?) ทันทีโดยไม่ต้องผ่านหน้าช่อดอกไม้
                 setTimeout(() => { 
                     nongImg.classList.add('show'); 
-                    statusText.innerText = `มีอะไรซ่อนอยู่ในต้นไม้ที่พี่รดน้ำด้วยนะ... ลองกดดูสิ?`; 
+                    statusText.innerText = `มีอะไรซ่อนอยู่ในต้นไม้ที่พี่รดน้ำด้วยนะ... \nพี่ลองกดดูสิ?`; 
                 }, 800);
             } else {
                 waterCan.style.display = "block";
